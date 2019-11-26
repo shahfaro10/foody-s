@@ -6,26 +6,25 @@ error_reporting(0);
 if (strlen($_SESSION['fosaid']==0)) {
   header('location:logout.php');
   } else{
+
+
 if(isset($_POST['submit']))
-{
-$adminid=$_SESSION['fosaid'];
-$cpassword=md5($_POST['currentpassword']);
-$newpassword=md5($_POST['newpassword']);
-$query=mysqli_query($con,"select ID from tbladmin where ID='$adminid' and   Password='$cpassword'");
-$row=mysqli_fetch_array($query);
-if($row>0){
-$ret=mysqli_query($con,"update tbladmin set Password='$newpassword' where ID='$adminid'");
-$msg= "Your password successully changed"; 
-} else {
-
-$msg="Your current password is wrong";
-}
-
-
-
-}
-
+  {
+    $adminid=$_SESSION['fosaid'];
+    $adminname=$_POST['adminname'];
+    $mobno=$_POST['mobilenumber'];
+    $email=$_POST['email'];
   
+  
+     $query=mysqli_query($con, "update tbladmin set AdminName ='$adminname', MobileNumber='$mobno', Email='$email' where ID='$adminid'");
+    if ($query) {
+    $msg="Admin profile has been updated.";
+  }
+  else
+    {
+      $msg="Something Went Wrong. Please try again.";
+    }
+  }
   ?>
 <!DOCTYPE html>
 <html>
@@ -43,19 +42,7 @@ $msg="Your current password is wrong";
     <link href="css/plugins/steps/jquery.steps.css" rel="stylesheet">
     <link href="css/animate.css" rel="stylesheet">
     <link href="css/style.css" rel="stylesheet">
-<script type="text/javascript">
-function checkpass()
-{
-if(document.changepassword.newpassword.value!=document.changepassword.confirmpassword.value)
-{
-alert('New Password and Confirm Password field does not match');
-document.changepassword.confirmpassword.focus();
-return false;
-}
-return true;
-}   
 
-</script>
 </head>
 
 <body>
@@ -71,16 +58,16 @@ return true;
         </div>
             <div class="row wrapper border-bottom white-bg page-heading">
             <div class="col-lg-10">
-                <h2>Change Password</h2>
+                <h2>Admin Profile</h2>
                 <ol class="breadcrumb">
                     <li class="breadcrumb-item">
                         <a href="dashboard.php">Home</a>
                     </li>
                     <li class="breadcrumb-item">
-                        <a>Password</a>
+                        <a>Profile</a>
                     </li>
                     <li class="breadcrumb-item active">
-                        <strong>Change</strong>
+                        <strong>Update</strong>
                     </li>
                 </ol>
             </div>
@@ -90,13 +77,13 @@ return true;
             <div class="row">
                 <div class="col-lg-12">
                     <div class="ibox">
-                    
+                        
                         <div class="ibox-content">
- <p style="font-size:16px; color:red;"> <?php if($msg){
+<p style="font-size:16px; color:red;"> <?php if($msg){
     echo $msg;
-  }  ?> </p>   
-                            
-                          <?php
+  }  ?> </p>
+
+                           <?php
 $adminid=$_SESSION['fosaid'];
 $ret=mysqli_query($con,"select * from tbladmin where ID='$adminid'");
 $cnt=1;
@@ -104,29 +91,30 @@ while ($row=mysqli_fetch_array($ret)) {
 
 ?>
 
-                            <form name="changepassword" method="post" class="wizard-big" onsubmit="return checkpass();">
+                            <form id="submit" action="#" class="wizard-big" method="post" name="submit">
                                     <fieldset>
-                                          <div class="form-group row"><label class="col-sm-2 col-form-label">Current Password:</label>
-                                                <div class="col-sm-10"><input type="password" name='currentpassword' id="currentpassword" class="form-control white_bg" required="true">
+                                          <div class="form-group row"><label class="col-sm-2 col-form-label">Admin Name:</label>
+                                                <div class="col-sm-10"><input name='adminname' id="adminname" class="form-control white_bg" value="<?php  echo $row['AdminName'];?>">
      
        
    </div>
                                             </div>
-                                             <div class="form-group row"><label class="col-sm-2 col-form-label">New Password:</label>
-                                                <div class="col-sm-10"><input type="password" name='newpassword' id="newpassword" class="form-control white_bg" required="true">
-     
-       
-   </div>
+                                            <div class="form-group row"><label class="col-sm-2 col-form-label">User Name:</label>
+                                                <div class="col-sm-10"><input type="text" class="form-control" name="username" readonly="true" value="<?php  echo $row['UserName'];?>"></div>
                                             </div>
                                             
-                                             <div class="form-group row"><label class="col-sm-2 col-form-label">Confirm Password:</label>
-                                                <div class="col-sm-10"><input type="password" name='confirmpassword' id="confirmpassword" class="form-control white_bg" required="true">
-     
-       
-   </div>
+                                            <div class="form-group row"><label class="col-sm-2 col-form-label">MobileNumber:</label>
+                                                <div class="col-sm-10">
+                                                 <input type="text" class="form-control" name="mobilenumber" required="true"value="<?php  echo $row['MobileNumber'];?>">
+                                                </div>
                                             </div>
                                             
-                                                                                      
+                                            <div class="form-group row"><label class="col-sm-2 col-form-label">Email:</label>
+                                                <div class="col-sm-10"><input type="email" class="form-control" name="email" required="true" value="<?php  echo $row['Email'];?>"></div>
+                                            </div>
+                                            <div class="form-group row"><label class="col-sm-2 col-form-label">Admin Registration date:</label>
+                                                <div class="col-sm-10"><input type="text" class="form-control" name="adminrd" readonly="true" value="<?php  echo $row['AdminRegdate'];?>"></div>
+                                            </div>
                                            
                                         </fieldset>
 
@@ -135,7 +123,7 @@ while ($row=mysqli_fetch_array($ret)) {
                              <?php } ?>
                                
   
-          <p style="text-align: center;"><button type="submit" name="submit" class="btn btn-primary">Change</button></p>
+          <p style="text-align: center;"><button type="submit" name="submit" class="btn btn-primary">Update</button></p>
             
                                 
                                

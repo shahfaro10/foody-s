@@ -2,30 +2,12 @@
 session_start();
 error_reporting(0);
 include('includes/dbconnection.php');
-error_reporting(0);
 if (strlen($_SESSION['fosaid']==0)) {
   header('location:logout.php');
   } else{
-if(isset($_POST['submit']))
-{
-$adminid=$_SESSION['fosaid'];
-$cpassword=md5($_POST['currentpassword']);
-$newpassword=md5($_POST['newpassword']);
-$query=mysqli_query($con,"select ID from tbladmin where ID='$adminid' and   Password='$cpassword'");
-$row=mysqli_fetch_array($query);
-if($row>0){
-$ret=mysqli_query($con,"update tbladmin set Password='$newpassword' where ID='$adminid'");
-$msg= "Your password successully changed"; 
-} else {
-
-$msg="Your current password is wrong";
-}
-
-
-
-}
 
   
+
   ?>
 <!DOCTYPE html>
 <html>
@@ -43,19 +25,7 @@ $msg="Your current password is wrong";
     <link href="css/plugins/steps/jquery.steps.css" rel="stylesheet">
     <link href="css/animate.css" rel="stylesheet">
     <link href="css/style.css" rel="stylesheet">
-<script type="text/javascript">
-function checkpass()
-{
-if(document.changepassword.newpassword.value!=document.changepassword.confirmpassword.value)
-{
-alert('New Password and Confirm Password field does not match');
-document.changepassword.confirmpassword.focus();
-return false;
-}
-return true;
-}   
 
-</script>
 </head>
 
 <body>
@@ -67,86 +37,90 @@ return true;
         <div id="page-wrapper" class="gray-bg">
              <?php include_once('includes/header.php');?>
         <div class="row border-bottom">
-        
+        <p style="font-size:16px; color:red;"> <?php if($msg){
+    echo $msg;
+  }  ?> </p>
         </div>
-            <div class="row wrapper border-bottom white-bg page-heading">
-            <div class="col-lg-10">
-                <h2>Change Password</h2>
-                <ol class="breadcrumb">
-                    <li class="breadcrumb-item">
-                        <a href="dashboard.php">Home</a>
-                    </li>
-                    <li class="breadcrumb-item">
-                        <a>Password</a>
-                    </li>
-                    <li class="breadcrumb-item active">
-                        <strong>Change</strong>
-                    </li>
-                </ol>
-            </div>
-        </div>
+            
         <div class="wrapper wrapper-content animated fadeInRight">
             
             <div class="row">
                 <div class="col-lg-12">
                     <div class="ibox">
-                    
+                        
                         <div class="ibox-content">
- <p style="font-size:16px; color:red;"> <?php if($msg){
-    echo $msg;
-  }  ?> </p>   
-                            
-                          <?php
-$adminid=$_SESSION['fosaid'];
-$ret=mysqli_query($con,"select * from tbladmin where ID='$adminid'");
-$cnt=1;
+                           
+<h4 class="header-title m-t-0 m-b-30">Report Counts</h4>
+<?php
+$fdate=$_POST['fromdate'];
+$tdate=$_POST['todate'];
+?>
+<h5 align="center" style="color:blue">Order Count Report from <?php echo $fdate?> to <?php echo $tdate?></h5>
+<hr />
+<table id="datatable" class="table table-bordered dt-responsive nowrap" style="border-collapse: collapse; border-spacing: 0; width: 100%;">
+                                        <thead>
+<tr>
+<th>S.NO</th>
+<th>Total Order</th>
+<th>Total Order not confirmed</th>
+<th>Total Order Confirmed</th>
+<th>Total Order Cancelled</th>
+<th>Total Order being prepared</th>
+<th>Total Order Pickup</th>
+<th>Total Delivered</th>
+</tr>
+</thead>
+<?php
+$ret=mysqli_query($con,"select month(OrderTime) as lmonth,year(OrderTime) as lyear,count(ID) as totalcount,count(if(OrderFinalStatus='',0,null)) as uncofirmedorder,count(if(OrderFinalStatus='Order Confirmed',0,null)) as confirmedorder,count(if(OrderFinalStatus='Food being Prepared',0,null)) as fdbgpr,count(if(OrderFinalStatus='Food Pickup',0,null)) as foodpickup,count(if(OrderFinalStatus='Food Delivered',0,null)) as fooddel,count(if(OrderFinalStatus='Order Cancelled',0,null)) as foodcancel from tblorderaddresses where OrderTime between '$fdate' and '$tdate' group by lmonth,lyear");
 while ($row=mysqli_fetch_array($ret)) {
 
 ?>
+              
+                <tr>
+                  <td><?php  echo $row['lmonth']."/".$row['lyear'];?></td>
+              <td><?php  echo $total=$row['totalcount'];?></td>
+              <td><?php  echo $npytotal=$row['uncofirmedorder'];?></td>
+                  <td><?php  echo $ntotal=$row['confirmedorder'];?></td>
+                    <td><?php  echo $tctotal=$row['foodcancel'];?></td>
+                  <td><?php  echo $atotl=$row['fdbgpr'];?></td>
+                <td><?php  echo $intotal=$row['foodpickup'];?></td>
+                <td><?php  echo $aritotal=$row['fooddel'];?></td>
+                    </tr>
+                <?php
+$ftotal+=$total;
+$ttlny+=$npytotal;
+$fntotal+=$ntotal;
+$fctotal+=$tctotal;
+$fatotl+=$atotl;
+$fintotal+=$intotal;
+$faritotal+=$aritotal;
 
-                            <form name="changepassword" method="post" class="wizard-big" onsubmit="return checkpass();">
-                                    <fieldset>
-                                          <div class="form-group row"><label class="col-sm-2 col-form-label">Current Password:</label>
-                                                <div class="col-sm-10"><input type="password" name='currentpassword' id="currentpassword" class="form-control white_bg" required="true">
-     
-       
-   </div>
-                                            </div>
-                                             <div class="form-group row"><label class="col-sm-2 col-form-label">New Password:</label>
-                                                <div class="col-sm-10"><input type="password" name='newpassword' id="newpassword" class="form-control white_bg" required="true">
-     
-       
-   </div>
-                                            </div>
-                                            
-                                             <div class="form-group row"><label class="col-sm-2 col-form-label">Confirm Password:</label>
-                                                <div class="col-sm-10"><input type="password" name='confirmpassword' id="confirmpassword" class="form-control white_bg" required="true">
-     
-       
-   </div>
-                                            </div>
-                                            
-                                                                                      
-                                           
-                                        </fieldset>
+}?>
+   
+   <tr>
+                  <td>Total </td>
+              <td><?php  echo $ftotal;?></td>
+              <td><?php echo $ttlny;?></td>
+                  <td><?php  echo $fntotal;?></td>
+                      <td><?php  echo $fctotal;?></td>
+                  <td><?php  echo $fatotl;?></td>
+                <td><?php  echo $fintotal;?></td>
+                <td><?php  echo $faritotal;?></td>
+                 
+                 
+                </tr>   
 
-                                </fieldset>
-                                
-                             <?php } ?>
-                               
-  
-          <p style="text-align: center;"><button type="submit" name="submit" class="btn btn-primary">Change</button></p>
-            
-                                
-                               
-                            </form>
+</table>
                         </div>
                     </div>
                     </div>
 
                 </div>
             </div>
-        <?php include_once('includes/footer.php');?>
+      
+    
+    
+       <?php include_once('includes/footer.php');?>
 
         </div>
         </div>
@@ -255,4 +229,4 @@ while ($row=mysqli_fetch_array($ret)) {
 </body>
 
 </html>
-   <?php } ?>
+<?php } ?>

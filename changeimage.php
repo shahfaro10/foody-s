@@ -2,30 +2,39 @@
 session_start();
 error_reporting(0);
 include('includes/dbconnection.php');
-error_reporting(0);
 if (strlen($_SESSION['fosaid']==0)) {
   header('location:logout.php');
   } else{
+
 if(isset($_POST['submit']))
+  {
+     $cid=$_GET['editid'];
+       
+    $itempic=$_FILES["itemimages"]["name"];
+    $extension = substr($itempic,strlen($itempic)-4,strlen($itempic));
+// allowed extensions
+$allowed_extensions = array(".jpg","jpeg",".png",".gif");
+// Validation for allowed extensions .in_array() function searches an array for a specific value.
+if(!in_array($extension,$allowed_extensions))
 {
-$adminid=$_SESSION['fosaid'];
-$cpassword=md5($_POST['currentpassword']);
-$newpassword=md5($_POST['newpassword']);
-$query=mysqli_query($con,"select ID from tbladmin where ID='$adminid' and   Password='$cpassword'");
-$row=mysqli_fetch_array($query);
-if($row>0){
-$ret=mysqli_query($con,"update tbladmin set Password='$newpassword' where ID='$adminid'");
-$msg= "Your password successully changed"; 
-} else {
-
-$msg="Your current password is wrong";
+echo "<script>alert('Invalid format. Only jpg / jpeg/ png /gif format allowed');</script>";
 }
-
-
-
-}
+else
+{
+    $itempic=md5($itempic).$extension;
+     move_uploaded_file($_FILES["itemimages"]["tmp_name"],"itemimages/".$itempic);
+    $query=mysqli_query($con, "update tblfood set Image='$itempic' where ID='$cid'");
+    if ($query) {
+    $msg="Food Item image has been updated.";
+  }
+  else
+    {
+      $msg="Something Went Wrong. Please try again";
+    }
 
   
+}
+}
   ?>
 <!DOCTYPE html>
 <html>
@@ -43,19 +52,7 @@ $msg="Your current password is wrong";
     <link href="css/plugins/steps/jquery.steps.css" rel="stylesheet">
     <link href="css/animate.css" rel="stylesheet">
     <link href="css/style.css" rel="stylesheet">
-<script type="text/javascript">
-function checkpass()
-{
-if(document.changepassword.newpassword.value!=document.changepassword.confirmpassword.value)
-{
-alert('New Password and Confirm Password field does not match');
-document.changepassword.confirmpassword.focus();
-return false;
-}
-return true;
-}   
 
-</script>
 </head>
 
 <body>
@@ -71,71 +68,59 @@ return true;
         </div>
             <div class="row wrapper border-bottom white-bg page-heading">
             <div class="col-lg-10">
-                <h2>Change Password</h2>
+                <h2>Food Items</h2>
                 <ol class="breadcrumb">
                     <li class="breadcrumb-item">
                         <a href="dashboard.php">Home</a>
                     </li>
                     <li class="breadcrumb-item">
-                        <a>Password</a>
+                        <a>Item Name</a>
                     </li>
                     <li class="breadcrumb-item active">
-                        <strong>Change</strong>
+                        <strong>Add</strong>
                     </li>
                 </ol>
             </div>
         </div>
+        
         <div class="wrapper wrapper-content animated fadeInRight">
             
             <div class="row">
                 <div class="col-lg-12">
                     <div class="ibox">
-                    
+                        
                         <div class="ibox-content">
- <p style="font-size:16px; color:red;"> <?php if($msg){
-    echo $msg;
-  }  ?> </p>   
-                            
-                          <?php
-$adminid=$_SESSION['fosaid'];
-$ret=mysqli_query($con,"select * from tbladmin where ID='$adminid'");
+                           
+ <?php
+ $cid=$_GET['editid'];
+$ret=mysqli_query($con,"select * from tblfood where ID='$cid'");
 $cnt=1;
 while ($row=mysqli_fetch_array($ret)) {
 
 ?>
 
-                            <form name="changepassword" method="post" class="wizard-big" onsubmit="return checkpass();">
+                            <form id="submit" action="#" class="wizard-big" method="post" name="submit" enctype="multipart/form-data">
+                                <p style="font-size:16px; color:red;"> <?php if($msg){
+    echo $msg;
+  }  ?> </p>
                                     <fieldset>
-                                          <div class="form-group row"><label class="col-sm-2 col-form-label">Current Password:</label>
-                                                <div class="col-sm-10"><input type="password" name='currentpassword' id="currentpassword" class="form-control white_bg" required="true">
-     
-       
-   </div>
+                                        <div class="form-group row"><label class="col-sm-2 col-form-label">Item Name</label>
+                                                <div class="col-sm-10"><?php  echo $row['ItemName'];?></div>
                                             </div>
-                                             <div class="form-group row"><label class="col-sm-2 col-form-label">New Password:</label>
-                                                <div class="col-sm-10"><input type="password" name='newpassword' id="newpassword" class="form-control white_bg" required="true">
-     
-       
-   </div>
+                                                                                                                               
+                                            <div class="form-group row"><label class="col-sm-2 col-form-label">Image</label>
+                                                <div class="col-sm-10"><img src="itemimages/<?php echo $row['Image'];?>" width="200" height="150" value="<?php  echo $row['Image'];?>"> 
+                                                     </div>
                                             </div>
-                                            
-                                             <div class="form-group row"><label class="col-sm-2 col-form-label">Confirm Password:</label>
-                                                <div class="col-sm-10"><input type="password" name='confirmpassword' id="confirmpassword" class="form-control white_bg" required="true">
-     
-       
-   </div>
+                                            <div class="form-group row"><label class="col-sm-2 col-form-label">New Image</label>
+                                                <div class="col-sm-10"><input type="file" name="itemimages" required="true"></div>
                                             </div>
-                                            
-                                                                                      
-                                           
+     
                                         </fieldset>
+                                        <?php } ?>
 
-                                </fieldset>
-                                
-                             <?php } ?>
-                               
-  
-          <p style="text-align: center;"><button type="submit" name="submit" class="btn btn-primary">Change</button></p>
+
+          <p style="text-align: center;"><button type="submit" name="submit" class="btn btn-primary">Submit</button></p>
             
                                 
                                
@@ -255,4 +240,4 @@ while ($row=mysqli_fetch_array($ret)) {
 </body>
 
 </html>
-   <?php } ?>
+<?php }  ?>

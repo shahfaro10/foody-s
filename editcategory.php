@@ -2,30 +2,26 @@
 session_start();
 error_reporting(0);
 include('includes/dbconnection.php');
-error_reporting(0);
 if (strlen($_SESSION['fosaid']==0)) {
   header('location:logout.php');
   } else{
+
 if(isset($_POST['submit']))
-{
-$adminid=$_SESSION['fosaid'];
-$cpassword=md5($_POST['currentpassword']);
-$newpassword=md5($_POST['newpassword']);
-$query=mysqli_query($con,"select ID from tbladmin where ID='$adminid' and   Password='$cpassword'");
-$row=mysqli_fetch_array($query);
-if($row>0){
-$ret=mysqli_query($con,"update tbladmin set Password='$newpassword' where ID='$adminid'");
-$msg= "Your password successully changed"; 
-} else {
-
-$msg="Your current password is wrong";
-}
-
-
-
-}
+  {
+    $category=$_POST['categoryname'];
+     $eid=$_GET['editid'];
+     
+    $query=mysqli_query($con, "update tblcategory set CategoryName ='$category' where ID=$eid");
+    if ($query) {
+    $msg="Category has been updated.";
+  }
+  else
+    {
+      $msg="Something Went Wrong. Please try again";
+    }
 
   
+}
   ?>
 <!DOCTYPE html>
 <html>
@@ -43,19 +39,7 @@ $msg="Your current password is wrong";
     <link href="css/plugins/steps/jquery.steps.css" rel="stylesheet">
     <link href="css/animate.css" rel="stylesheet">
     <link href="css/style.css" rel="stylesheet">
-<script type="text/javascript">
-function checkpass()
-{
-if(document.changepassword.newpassword.value!=document.changepassword.confirmpassword.value)
-{
-alert('New Password and Confirm Password field does not match');
-document.changepassword.confirmpassword.focus();
-return false;
-}
-return true;
-}   
 
-</script>
 </head>
 
 <body>
@@ -69,74 +53,55 @@ return true;
         <div class="row border-bottom">
         
         </div>
-            <div class="row wrapper border-bottom white-bg page-heading">
-            <div class="col-lg-10">
-                <h2>Change Password</h2>
-                <ol class="breadcrumb">
-                    <li class="breadcrumb-item">
-                        <a href="dashboard.php">Home</a>
-                    </li>
-                    <li class="breadcrumb-item">
-                        <a>Password</a>
-                    </li>
-                    <li class="breadcrumb-item active">
-                        <strong>Change</strong>
-                    </li>
-                </ol>
-            </div>
-        </div>
+            
         <div class="wrapper wrapper-content animated fadeInRight">
             
             <div class="row">
                 <div class="col-lg-12">
                     <div class="ibox">
-                    
+                        
                         <div class="ibox-content">
- <p style="font-size:16px; color:red;"> <?php if($msg){
+                           
+
+                            <form id="form" action="#" class="wizard-big" method="post" name="submit">
+                                <p style="font-size:16px; color:red;"> <?php if($msg){
     echo $msg;
-  }  ?> </p>   
-                            
-                          <?php
-$adminid=$_SESSION['fosaid'];
-$ret=mysqli_query($con,"select * from tbladmin where ID='$adminid'");
+  }  ?> </p>
+                                <?php
+ $cid=$_GET['editid'];
+$ret=mysqli_query($con,"select * from tblcategory where ID='$cid'");
 $cnt=1;
 while ($row=mysqli_fetch_array($ret)) {
 
 ?>
-
-                            <form name="changepassword" method="post" class="wizard-big" onsubmit="return checkpass();">
                                     <fieldset>
-                                          <div class="form-group row"><label class="col-sm-2 col-form-label">Current Password:</label>
-                                                <div class="col-sm-10"><input type="password" name='currentpassword' id="currentpassword" class="form-control white_bg" required="true">
-     
-       
-   </div>
+                                    <h2>Food Category</h2>
+                                    <div class="row">
+                                        <div class="col-lg-8">
+                                            <div class="form-group">
+                                                
+                                                <input id="categoryname" name="categoryname" type="text" class="form-control required" required="true" value="<?php  echo $row['CategoryName'];?>">
                                             </div>
-                                             <div class="form-group row"><label class="col-sm-2 col-form-label">New Password:</label>
-                                                <div class="col-sm-10"><input type="password" name='newpassword' id="newpassword" class="form-control white_bg" required="true">
-     
-       
-   </div>
+                                            <?php } ?>
+                                            <div class="form-group">
+                                              <p style="text-align: center;"><button type="submit" name="submit" class="btn btn-primary">Update</button></p>
                                             </div>
-                                            
-                                             <div class="form-group row"><label class="col-sm-2 col-form-label">Confirm Password:</label>
-                                                <div class="col-sm-10"><input type="password" name='confirmpassword' id="confirmpassword" class="form-control white_bg" required="true">
-     
-       
-   </div>
-                                            </div>
-                                            
-                                                                                      
                                            
-                                        </fieldset>
+                                        </div>
+                                        <div class="col-lg-4">
+                                            <div class="text-center">
+                                                <div style="margin-top: 20px">
+                                                    <i class="fa fa-sign-in" style="font-size: 180px;color: #e5e5e5 "></i>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
 
                                 </fieldset>
                                 
-                             <?php } ?>
+                                
                                
-  
-          <p style="text-align: center;"><button type="submit" name="submit" class="btn btn-primary">Change</button></p>
-            
+
                                 
                                
                             </form>
@@ -146,7 +111,7 @@ while ($row=mysqli_fetch_array($ret)) {
 
                 </div>
             </div>
-        <?php include_once('includes/footer.php');?>
+                <?php include_once('includes/footer.php');?>
 
         </div>
         </div>
@@ -255,4 +220,4 @@ while ($row=mysqli_fetch_array($ret)) {
 </body>
 
 </html>
-   <?php } ?>
+<?php }  ?>

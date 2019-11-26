@@ -2,30 +2,12 @@
 session_start();
 error_reporting(0);
 include('includes/dbconnection.php');
-error_reporting(0);
 if (strlen($_SESSION['fosaid']==0)) {
   header('location:logout.php');
   } else{
-if(isset($_POST['submit']))
-{
-$adminid=$_SESSION['fosaid'];
-$cpassword=md5($_POST['currentpassword']);
-$newpassword=md5($_POST['newpassword']);
-$query=mysqli_query($con,"select ID from tbladmin where ID='$adminid' and   Password='$cpassword'");
-$row=mysqli_fetch_array($query);
-if($row>0){
-$ret=mysqli_query($con,"update tbladmin set Password='$newpassword' where ID='$adminid'");
-$msg= "Your password successully changed"; 
-} else {
-
-$msg="Your current password is wrong";
-}
-
-
-
-}
 
   
+
   ?>
 <!DOCTYPE html>
 <html>
@@ -43,19 +25,7 @@ $msg="Your current password is wrong";
     <link href="css/plugins/steps/jquery.steps.css" rel="stylesheet">
     <link href="css/animate.css" rel="stylesheet">
     <link href="css/style.css" rel="stylesheet">
-<script type="text/javascript">
-function checkpass()
-{
-if(document.changepassword.newpassword.value!=document.changepassword.confirmpassword.value)
-{
-alert('New Password and Confirm Password field does not match');
-document.changepassword.confirmpassword.focus();
-return false;
-}
-return true;
-}   
 
-</script>
 </head>
 
 <body>
@@ -67,86 +37,128 @@ return true;
         <div id="page-wrapper" class="gray-bg">
              <?php include_once('includes/header.php');?>
         <div class="row border-bottom">
-        
+
         </div>
-            <div class="row wrapper border-bottom white-bg page-heading">
-            <div class="col-lg-10">
-                <h2>Change Password</h2>
-                <ol class="breadcrumb">
-                    <li class="breadcrumb-item">
-                        <a href="dashboard.php">Home</a>
-                    </li>
-                    <li class="breadcrumb-item">
-                        <a>Password</a>
-                    </li>
-                    <li class="breadcrumb-item active">
-                        <strong>Change</strong>
-                    </li>
-                </ol>
-            </div>
-        </div>
+            
         <div class="wrapper wrapper-content animated fadeInRight">
             
             <div class="row">
                 <div class="col-lg-12">
                     <div class="ibox">
-                    
+                        
                         <div class="ibox-content">
- <p style="font-size:16px; color:red;"> <?php if($msg){
-    echo $msg;
-  }  ?> </p>   
-                            
-                          <?php
-$adminid=$_SESSION['fosaid'];
-$ret=mysqli_query($con,"select * from tbladmin where ID='$adminid'");
+                           
+
+<?php
+$fdate=$_POST['fromdate'];
+$tdate=$_POST['todate'];
+$rtype=$_POST['requesttype'];
+
+?>
+
+<?php if($rtype=='mtwise'){
+$month1=strtotime($fdate);
+$month2=strtotime($tdate);
+$m1=date("F",$month1);
+$m2=date("F",$month2);
+$y1=date("Y",$month1);
+$y2=date("Y",$month2);
+    ?>
+    <h4 class="header-title m-t-0 m-b-30">Sales Report Month Wise</h4>
+<h4 align="center" style="color:blue">Sales Report  from <?php echo $m1."-".$y1;?> to <?php echo $m2."-".$y2;?></h4>
+<hr />
+<table id="datatable" class="table table-bordered dt-responsive nowrap" style="border-collapse: collapse; border-spacing: 0; width: 100%;">
+                                        <thead>
+<tr>
+<th>S.NO</th>
+<th>Month / Year </th>
+<th>Sales</th>
+</tr>
+</thead>
+<?php
+$fstatus='Food Delivered';
+$ret=mysqli_query($con,"select month(OrderTime) as lmonth,year(OrderTime) as lyear,sum(ItemPrice) as totalitmprice from tblorders join tblorderaddresses on tblorderaddresses.Ordernumber=tblorders.OrderNumber join tblfood on tblfood.ID=tblorders.FoodId where date(tblorderaddresses.OrderTime) between '$fdate' and '$tdate' and tblorderaddresses.OrderFinalStatus='$fstatus'  group by lmonth,lyear");
 $cnt=1;
 while ($row=mysqli_fetch_array($ret)) {
 
 ?>
+              
+                <tr>
+                    <td><?php echo $cnt;?></td>
+                  <td><?php  echo $row['lmonth']."/".$row['lyear'];?></td>
+              <td><?php  echo $total=$row['totalitmprice'];?></td>
+             
+                    </tr>
+                <?php
+$ftotal+=$total;
+$cnt++;
+}?>
+   
+   <tr>
+                  <td colspan="2" align="center">Total </td>
+              <td><?php  echo $ftotal;?></td>
+   
+                 
+                 
+                </tr>   
 
-                            <form name="changepassword" method="post" class="wizard-big" onsubmit="return checkpass();">
-                                    <fieldset>
-                                          <div class="form-group row"><label class="col-sm-2 col-form-label">Current Password:</label>
-                                                <div class="col-sm-10"><input type="password" name='currentpassword' id="currentpassword" class="form-control white_bg" required="true">
-     
-       
-   </div>
-                                            </div>
-                                             <div class="form-group row"><label class="col-sm-2 col-form-label">New Password:</label>
-                                                <div class="col-sm-10"><input type="password" name='newpassword' id="newpassword" class="form-control white_bg" required="true">
-     
-       
-   </div>
-                                            </div>
-                                            
-                                             <div class="form-group row"><label class="col-sm-2 col-form-label">Confirm Password:</label>
-                                                <div class="col-sm-10"><input type="password" name='confirmpassword' id="confirmpassword" class="form-control white_bg" required="true">
-     
-       
-   </div>
-                                            </div>
-                                            
-                                                                                      
-                                           
-                                        </fieldset>
+</table>
+<?php } else {
+$year1=strtotime($fdate);
+$year2=strtotime($tdate);
+$y1=date("Y",$year1);
+$y2=date("Y",$year2);
+ ?>
+        <h4 class="header-title m-t-0 m-b-30">Sales Report Year Wise</h4>
+    <h4 align="center" style="color:blue">Sales Report  from <?php echo $y1;?> to <?php echo $y2;?></h4>
+<hr />
+<table id="datatable" class="table table-bordered dt-responsive nowrap" style="border-collapse: collapse; border-spacing: 0; width: 100%;">
+                                        <thead>
+<tr>
+<th>S.NO</th>
+<th> Year </th>
+<th>Sales</th>
+</tr>
+</thead>
+<?php
+$ret=mysqli_query($con,"select year(OrderTime) as lyear,sum(ItemPrice) as totalitmprice from tblorders join tblorderaddresses on tblorderaddresses.Ordernumber=tblorders.OrderNumber join tblfood on tblfood.ID=tblorders.FoodId where year(tblorderaddresses.OrderTime) between '$fdate' and '$tdate' group by lyear");
+$cnt=1;
+while ($row=mysqli_fetch_array($ret)) {
 
-                                </fieldset>
-                                
-                             <?php } ?>
-                               
-  
-          <p style="text-align: center;"><button type="submit" name="submit" class="btn btn-primary">Change</button></p>
-            
-                                
-                               
-                            </form>
+?>
+              
+                <tr>
+                    <td><?php echo $cnt;?></td>
+                  <td><?php  echo $row['lyear'];?></td>
+              <td><?php  echo $total=$row['totalitmprice'];?></td>
+             
+                    </tr>
+                <?php
+$ftotal+=$total;
+$cnt++;
+}?>
+   
+   <tr>
+                  <td colspan="2" align="center">Total </td>
+              <td><?php  echo $ftotal;?></td>
+   
+                 
+                 
+                </tr>   
+
+</table>
+<?php } ?>
+
                         </div>
                     </div>
                     </div>
 
                 </div>
             </div>
-        <?php include_once('includes/footer.php');?>
+      
+    
+    
+       <?php include_once('includes/footer.php');?>
 
         </div>
         </div>
@@ -255,4 +267,4 @@ while ($row=mysqli_fetch_array($ret)) {
 </body>
 
 </html>
-   <?php } ?>
+<?php } ?>

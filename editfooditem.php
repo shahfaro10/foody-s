@@ -2,30 +2,33 @@
 session_start();
 error_reporting(0);
 include('includes/dbconnection.php');
-error_reporting(0);
 if (strlen($_SESSION['fosaid']==0)) {
   header('location:logout.php');
   } else{
+
 if(isset($_POST['submit']))
-{
-$adminid=$_SESSION['fosaid'];
-$cpassword=md5($_POST['currentpassword']);
-$newpassword=md5($_POST['newpassword']);
-$query=mysqli_query($con,"select ID from tbladmin where ID='$adminid' and   Password='$cpassword'");
-$row=mysqli_fetch_array($query);
-if($row>0){
-$ret=mysqli_query($con,"update tbladmin set Password='$newpassword' where ID='$adminid'");
-$msg= "Your password successully changed"; 
-} else {
-
-$msg="Your current password is wrong";
-}
-
-
-
-}
+  {
+    $faid=$_SESSION['fosaid'];
+     $cid=$_GET['editid'];
+    $fcat=$_POST['foodcategory'];
+    $itemname=$_POST['itemname'];
+    $description=$_POST['description'];
+    $quantity=$_POST['quantity'];
+    $price=$_POST['price'];
+    
+   $itempic=$_FILES["itemimages"]["name"];
+    $query=mysqli_query($con, "update tblfood set CategoryName='$fcat',ItemName='$itemname',ItemPrice='$price',ItemDes='$description',ItemQty='$quantity' where ID='$cid'" );
+    if ($query) {
+    $msg="Food Item has been Updated.";
+  }
+  else
+    {
+      $msg="Something Went Wrong. Please try again";
+    }
 
   
+}
+}
   ?>
 <!DOCTYPE html>
 <html>
@@ -43,19 +46,7 @@ $msg="Your current password is wrong";
     <link href="css/plugins/steps/jquery.steps.css" rel="stylesheet">
     <link href="css/animate.css" rel="stylesheet">
     <link href="css/style.css" rel="stylesheet">
-<script type="text/javascript">
-function checkpass()
-{
-if(document.changepassword.newpassword.value!=document.changepassword.confirmpassword.value)
-{
-alert('New Password and Confirm Password field does not match');
-document.changepassword.confirmpassword.focus();
-return false;
-}
-return true;
-}   
 
-</script>
 </head>
 
 <body>
@@ -71,16 +62,16 @@ return true;
         </div>
             <div class="row wrapper border-bottom white-bg page-heading">
             <div class="col-lg-10">
-                <h2>Change Password</h2>
+                <h2>Food Items</h2>
                 <ol class="breadcrumb">
                     <li class="breadcrumb-item">
                         <a href="dashboard.php">Home</a>
                     </li>
                     <li class="breadcrumb-item">
-                        <a>Password</a>
+                        <a>Item Name</a>
                     </li>
                     <li class="breadcrumb-item active">
-                        <strong>Change</strong>
+                        <strong>Update</strong>
                     </li>
                 </ol>
             </div>
@@ -90,52 +81,56 @@ return true;
             <div class="row">
                 <div class="col-lg-12">
                     <div class="ibox">
-                    
+                        
                         <div class="ibox-content">
- <p style="font-size:16px; color:red;"> <?php if($msg){
-    echo $msg;
-  }  ?> </p>   
+
                             
-                          <?php
-$adminid=$_SESSION['fosaid'];
-$ret=mysqli_query($con,"select * from tbladmin where ID='$adminid'");
+                           <?php
+ $cid=$_GET['editid'];
+$ret=mysqli_query($con,"select * from tblfood where ID='$cid'");
 $cnt=1;
 while ($row=mysqli_fetch_array($ret)) {
 
 ?>
 
-                            <form name="changepassword" method="post" class="wizard-big" onsubmit="return checkpass();">
+                            <form id="submit" action="#" class="wizard-big" method="post" name="submit">
+                                <p style="font-size:16px; color:red;"> <?php if($msg){
+    echo $msg;
+  }  ?> </p>
                                     <fieldset>
-                                          <div class="form-group row"><label class="col-sm-2 col-form-label">Current Password:</label>
-                                                <div class="col-sm-10"><input type="password" name='currentpassword' id="currentpassword" class="form-control white_bg" required="true">
+                                          <div class="form-group row"><label class="col-sm-2 col-form-label">Food Category:</label>
+                                                <div class="col-sm-10"><input name='foodcategory' id="foodcategory" class="form-control white_bg" value="<?php  echo $row['CategoryName'];?>">
      
        
    </div>
                                             </div>
-                                             <div class="form-group row"><label class="col-sm-2 col-form-label">New Password:</label>
-                                                <div class="col-sm-10"><input type="password" name='newpassword' id="newpassword" class="form-control white_bg" required="true">
-     
-       
-   </div>
+                                            <div class="form-group row"><label class="col-sm-2 col-form-label">Item Name:</label>
+                                                <div class="col-sm-10"><input type="text" class="form-control" name="itemname" value="<?php  echo $row['ItemName'];?>"></div>
                                             </div>
                                             
-                                             <div class="form-group row"><label class="col-sm-2 col-form-label">Confirm Password:</label>
-                                                <div class="col-sm-10"><input type="password" name='confirmpassword' id="confirmpassword" class="form-control white_bg" required="true">
-     
-       
-   </div>
+                                            <div class="form-group row"><label class="col-sm-2 col-form-label">Description:</label>
+                                                <div class="col-sm-10">
+                                                 <input type="text" class="form-control" name="description" value="<?php  echo $row['ItemDes'];?>">
+                                                </div>
                                             </div>
-                                            
-                                                                                      
+                                            <div class="form-group row"><label class="col-sm-2 col-form-label">Image</label>
+                                                <div class="col-sm-10"><img src="itemimages/<?php echo $row['Image'];?>" width="200" height="150" value="<?php  echo $row['Image'];?>"><a href="changeimage.php?editid=<?php echo $row['ID'];?>">Edit Image</a> </div>
+                                            </div>
+                                            <div class="form-group row"><label class="col-sm-2 col-form-label">Qyantity:</label>
+                                                <div class="col-sm-10"><input type="text" class="form-control" name="quantity" value="<?php  echo $row['ItemQty'];?>"></div>
+                                            </div>
+                                            <div class="form-group row"><label class="col-sm-2 col-form-label">Price:</label>
+                                                <div class="col-sm-10"><input type="text" class="form-control" name="price" value="<?php  echo $row['ItemPrice'];?>"></div>
+                                            </div>
                                            
                                         </fieldset>
 
                                 </fieldset>
                                 
-                             <?php } ?>
+                             
                                
   
-          <p style="text-align: center;"><button type="submit" name="submit" class="btn btn-primary">Change</button></p>
+          <p style="text-align: center;"><button type="submit" name="submit" class="btn btn-primary">Update</button></p>
             
                                 
                                
